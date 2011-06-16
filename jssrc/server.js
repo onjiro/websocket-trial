@@ -59,6 +59,7 @@ server.addListener("connection", function(conn){
 		}
 	    }
 	}
+	sys.log('closed! number = ' + connections.length);
     });
     
 });
