@@ -3,12 +3,26 @@ require 'eventmachine'
 require 'em-http-request'
 require 'json' 
 
-class Mode
+class HostMode
+  attr_writer :connection
   def listen(message)
     puts message
   end
 
   def run
+    puts "host mode"
+  end
+end
+
+class GuestMode
+  attr_writer :connection
+  def listen(message)
+    puts message
+  end
+  
+  def run
+    puts "guest mode"
+    loop {@connection.send({:key=>9}.to_json)}
   end
 end
 
@@ -22,12 +36,15 @@ EventMachine.run {
  
   http.stream { |msg|
     puts "Recieved: #{msg}"
+    msg = JSON.parse(msg)
     if mode.nil?
-      role = JSON.parse(msg)
-      puts "role = #{role['role']}, id = #{role['id']}"
-      mode = Mode.new
+      role, id = msg["role"], msg["id"]
+      puts "role = #{role}, id = #{'id'}"
+      mode = (role == "HOST") ? HostMode.new: GuestMode.new
+      mode.connection = http
+      t = Thread.new { mode.run }
     else
-      mode.listen(JSON.parse(msg))
+      mode.listen(msg)
     end
   }
   # TODO コネクション切断された場合の動作
