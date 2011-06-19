@@ -4,18 +4,7 @@ require 'em-http-request'
 require 'json' 
 require "starruby"
 require "starruby_view"
-
-class CollisionChecker
-  def initialize
-    @models = []
-  end
-  def add(model)
-    @models << model
-  end
-  def check
-    # todo 
-  end
-end
+require "collision_checker"
 
 class HostMode
   include StarRuby
