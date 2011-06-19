@@ -1,6 +1,6 @@
 class StarrubyView
   attr_accessor :screen
-  
+  attr_accessor :graphics
   def initialize
     @graphics = {}
     @models = []
