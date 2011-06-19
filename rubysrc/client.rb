@@ -4,12 +4,42 @@ require 'em-http-request'
 require 'json' 
 require "starruby"
 
+class CollisionChecker
+  def initialize
+    @models = []
+  end
+  def add(model)
+    @models << model
+  end
+  def check
+    # todo 
+  end
+end
+
+class StarrubyView
+  attr_accessor :screen
+  
+  def add(model)
+    @screen
+    @models << model
+  end
+  
+  def draw
+    @screen.clear 
+    # todo モデルの描画処理
+  end
+end
+
 class HostMode
   include StarRuby
   
   attr_writer :connection
   def initialize
     @messages = []
+    @models = []
+    @controlers = []
+    @view = StarrubyView.new
+    @collision_checker = CollisionChecker.new
   end
 
   def listen(message)
@@ -17,15 +47,25 @@ class HostMode
   end
 
   def run
-    font = Font.new("FreeSans", 12)
-    white = Color.new(255, 255, 255)
-    
     Game.run(320, 240, :title => "host mode", :fps => 60) do |game|
-      game.screen.clear
-      @messages.inject(8) do |y, one|
-        game.screen.render_text("#{one}", 8, y, font, white)
-        y = y + 8
+      @view.screen = game.screen if @view.screen.nil?
+
+      # 現在のモデルの状態を送信する
+      @connection.send(@models.to_json)
+
+      # 行動の入力を受け付ける
+      @controlers.each {|one| one.entry }
+
+      # モデルの動作を実行、衝突判定、描画
+      @models.each do |one| 
+        @collision_checker.add one
+        @view.add one
+        one.action.next
       end
+      @collision_checker.check
+      @view.draw
+
+      # サーバーから受け取ったメッセージをフラッシュ
       @messages = []
     end
   end
