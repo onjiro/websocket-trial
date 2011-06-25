@@ -35,6 +35,7 @@ server.addListener("connection", function(conn){
 	if (conn === connections[0]) {
 	    // HOSTからのメッセージはbroadcastする。
 	    server.broadcast(message);
+	    sys.log(message);
 	} else {
 	    // GUESTからのメッセージはHOSTのみに送信
 	    connections[0].send(message);
